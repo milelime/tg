@@ -109,4 +109,4 @@ See `libtg(3)` for the API.
 
 ## Status
 
-Early. See `MILESTONES.md` for the roadmap.
+Early. Please use and contribute if it interests you.
