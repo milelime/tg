@@ -1,0 +1,57 @@
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.\" Copyright (C) 2026 Alexey Ayzin
+.Dd June 16, 2026
+.Dt TG 5
+.Os
+.Sh NAME
+.Nm user.tags
+.Nd tag storage format used by tg
+.Sh DESCRIPTION
+.Xr tg 1
+stores a file's tags in a single POSIX extended attribute named
+.Va user.tags ,
+in the
+.Va user
+namespace, set on the file itself (symbolic links are not followed).
+.Pp
+The value is a list of tags joined by commas, for example:
+.Bd -literal -offset indent
+user.tags = "ml,paper,to-read"
+.Ed
+.Pp
+The canonical on-disk form obeys the following rules:
+.Bl -bullet
+.It
+Tags are separated by a single comma
+.Pq Ql \&, .
+.It
+Tags are sorted in ascending byte order and de-duplicated.
+.It
+A tag is non-empty, case-sensitive, and contains no comma.
+Surrounding whitespace is not part of the tag.
+.It
+The value is not NUL-terminated and carries no trailing newline.
+.It
+A file with no tags has no
+.Va user.tags
+attribute at all; the empty value
+.Ql \&""
+is never written.
+Removing the last tag deletes the attribute.
+.El
+.Pp
+Readers should accept minor deviations produced by hand-editing, such as
+extra whitespace around a tag or empty fields from a doubled or trailing
+comma; such input is normalized on the next write.
+.Sh INTEROPERABILITY
+Because the format is plain text in a standard attribute, the tags can be
+inspected or edited with ordinary tools:
+.Bd -literal -offset indent
+$ getfattr -n user.tags file
+$ setfattr -x user.tags file	# remove all tags
+.Ed
+.Sh SEE ALSO
+.Xr tg 1 ,
+.Xr getfattr 1 ,
+.Xr setfattr 1 ,
+.Xr xattr 7

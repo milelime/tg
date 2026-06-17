@@ -1,0 +1,7 @@
+tg NEWS - user-visible changes
+
+0.1.0 (unreleased)
+  * First release.
+  * Commands: add, rm, tags, clear, find, cp.
+  * find supports --all (default), --any, -0, and listing every tagged file.
+  * libtg: tag-set and xattr C API (tg/tagset.h, tg/xattr.h).

@@ -1,0 +1,10 @@
+prefix=@PREFIX@
+exec_prefix=${prefix}
+libdir=${exec_prefix}/lib
+includedir=${prefix}/include
+
+Name: tg
+Description: Tag files with extended attributes that travel with the file
+Version: @VERSION@
+Libs: -L${libdir} -ltg
+Cflags: -I${includedir}

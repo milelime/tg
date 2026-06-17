@@ -1,0 +1,19 @@
+CompileFlags:
+  Add:
+    - -xc          # treat all files (incl. standalone .h headers) as C, not ObjC++
+    - -std=c11
+    - -Wall
+    - -Wextra
+    - -Isrc
+  # nob.h is a vendored single-header build tool; do not let its style
+  # influence diagnostics for project code.
+Diagnostics:
+  UnusedIncludes: Strict
+  MissingIncludes: Strict
+
+---
+# nob.c/nob.h are the build script, not application code; relax noise there.
+If:
+  PathMatch: nob\.(c|h)
+Diagnostics:
+  Suppress: '*'

@@ -1,0 +1,151 @@
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.\" Copyright (C) 2026 Alexey Ayzin
+.Dd June 16, 2026
+.Dt TG 1
+.Os
+.Sh NAME
+.Nm tg
+.Nd tag files with extended attributes
+.Sh SYNOPSIS
+.Nm
+.Cm add
+.Ar tags
+.Ar file ...
+.Nm
+.Cm rm
+.Ar tags
+.Ar file ...
+.Nm
+.Cm tags
+.Ar file ...
+.Nm
+.Cm clear
+.Ar file ...
+.Nm
+.Cm find
+.Op Fl -any | Fl -all
+.Op Fl 0
+.Op Ar tags
+.Op Ar path
+.Nm
+.Cm cp
+.Ar src
+.Ar dst
+.Sh DESCRIPTION
+.Nm
+tags files using a POSIX extended attribute,
+.Va user.tags ,
+stored on the file itself rather than in a separate database.
+Because the tags live in the file's metadata, they survive renames and moves,
+and ride along on copies made with xattr-aware tools such as
+.Xr cp 1
+.Fl Fl preserve Ns = Ns Cm xattr ,
+.Xr rsync 1
+.Fl X ,
+and
+.Xr tar 1
+.Fl Fl xattrs .
+.Pp
+A
+.Ar tags
+argument is a single comma-separated list, for example
+.Ql work,urgent .
+Tags are case-sensitive, may not contain a comma, and are trimmed of
+surrounding whitespace.
+The stored value is kept sorted and de-duplicated; see
+.Xr tg 5 .
+.Sh COMMANDS
+.Bl -tag -width Ds
+.It Cm add Ar tags Ar file ...
+Add each tag in
+.Ar tags
+to every
+.Ar file .
+Tags already present are left unchanged.
+.It Cm rm Ar tags Ar file ...
+Remove each tag in
+.Ar tags
+from every
+.Ar file .
+Removing the last tag deletes the attribute.
+Tags that are not present are ignored.
+.It Cm tags Ar file ...
+Print each file's tags, one file per line, as
+.Ql path\eta,b,c .
+Untagged files print an empty list.
+.It Cm clear Ar file ...
+Remove all tags from every
+.Ar file .
+.It Cm find Oo Fl -any | Fl -all Oc Oo Fl 0 Oc Oo Ar tags Oc Oo Ar path Oc
+List regular files under
+.Ar path
+(default:
+.Ql \&. )
+whose tags match
+.Ar tags ,
+one path per line.
+With no
+.Ar tags ,
+list every tagged file.
+.Bl -tag -width "--any"
+.It Fl -all
+Match files having every tag in
+.Ar tags .
+This is the default.
+.It Fl -any
+Match files having any tag in
+.Ar tags .
+.It Fl 0
+Separate results with a NUL byte instead of a newline, for use with
+.Xr xargs 1
+.Fl 0 .
+.El
+.It Cm cp Ar src Ar dst
+Copy the tag set from
+.Ar src
+onto
+.Ar dst ,
+replacing any tags on
+.Ar dst .
+If
+.Ar src
+has no tags,
+.Ar dst Ns 's
+tags are removed.
+.El
+.Sh EXIT STATUS
+.Bl -tag -width Ds -compact
+.It 0
+Success.
+.It 1
+Usage error (bad arguments).
+.It 2
+Runtime error (at least one file could not be read or written).
+.El
+.Pp
+Per-file errors are reported on standard error and do not stop a batch
+operation; the others in the batch are still processed.
+.Sh EXAMPLES
+Tag a file and read it back:
+.Bd -literal -offset indent
+$ tg add paper,ml notes.pdf
+$ tg tags notes.pdf
+notes.pdf	ml,paper
+.Ed
+.Pp
+List everything under
+.Pa ~/docs
+tagged
+.Ql ml
+and delete it:
+.Bd -literal -offset indent
+$ tg find -0 ml ~/docs | xargs -0 rm
+.Ed
+.Sh SEE ALSO
+.Xr getfattr 1 ,
+.Xr setfattr 1 ,
+.Xr xattr 7 ,
+.Xr tg 5 ,
+.Xr libtg 3
+.Sh AUTHORS
+.An Alexey Ayzin

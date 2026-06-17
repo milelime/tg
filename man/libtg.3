@@ -1,0 +1,114 @@
+.\" SPDX-License-Identifier: GPL-3.0-or-later
+.\" Copyright (C) 2026 Alexey Ayzin
+.Dd June 16, 2026
+.Dt LIBTG 3
+.Os
+.Sh NAME
+.Nm tg_tagset_init ,
+.Nm tg_tagset_free ,
+.Nm tg_tagset_parse ,
+.Nm tg_tagset_add ,
+.Nm tg_tagset_remove ,
+.Nm tg_tagset_has ,
+.Nm tg_tagset_render ,
+.Nm tg_xattr_get ,
+.Nm tg_xattr_set ,
+.Nm tg_xattr_remove
+.Nd tag-set and extended-attribute library
+.Sh LIBRARY
+.Lb libtg
+.Sh SYNOPSIS
+.In tg/tagset.h
+.Ft void
+.Fn tg_tagset_init "TgTagSet *ts"
+.Ft void
+.Fn tg_tagset_free "TgTagSet *ts"
+.Ft bool
+.Fn tg_tagset_parse "TgTagSet *ts" "const char *value" "size_t len"
+.Ft bool
+.Fn tg_tagset_add "TgTagSet *ts" "const char *tag"
+.Ft bool
+.Fn tg_tagset_remove "TgTagSet *ts" "const char *tag"
+.Ft bool
+.Fn tg_tagset_has "const TgTagSet *ts" "const char *tag"
+.Ft char *
+.Fn tg_tagset_render "const TgTagSet *ts" "size_t *out_len"
+.In tg/xattr.h
+.Ft TgXattrResult
+.Fn tg_xattr_get "const char *path" "char *buf" "size_t cap" "size_t *out_len"
+.Ft TgXattrResult
+.Fn tg_xattr_set "const char *path" "const char *value" "size_t len"
+.Ft TgXattrResult
+.Fn tg_xattr_remove "const char *path"
+.Sh DESCRIPTION
+.Nm libtg
+is the engine behind
+.Xr tg 1 ,
+split into two independent layers.
+.Pp
+.Sy tagset
+manages an in-memory set of tags and converts to and from the serialized,
+comma-separated form described in
+.Xr tg 5 .
+A
+.Vt TgTagSet
+must be initialized with
+.Fn tg_tagset_init
+and released with
+.Fn tg_tagset_free .
+.Fn tg_tagset_parse
+splits a stored
+.Fa value
+of
+.Fa len
+bytes (which need not be NUL-terminated) and merges the tags into
+.Fa ts .
+.Fn tg_tagset_add
+and
+.Fn tg_tagset_remove
+return
+.Dv true
+when the set changed.
+.Fn tg_tagset_render
+returns a freshly
+.Xr malloc 3 Ns -ed ,
+NUL-terminated string such as
+.Ql a,b,c ,
+sorted and de-duplicated, and stores its length (excluding the NUL) in
+.Fa *out_len ;
+the caller frees it.
+.Pp
+.Sy xattr
+reads and writes the
+.Va user.tags
+attribute, operating on the symbolic link itself rather than its target.
+Values are byte buffers, not strings.
+.Sh RETURN VALUES
+The
+.Fn tg_xattr_ *
+functions return a
+.Vt TgXattrResult :
+.Dv TG_XATTR_OK
+on success,
+.Dv TG_XATTR_ABSENT
+when the attribute is unset,
+.Dv TG_XATTR_UNSUPPORTED ,
+.Dv TG_XATTR_NOFILE ,
+.Dv TG_XATTR_ACCESS ,
+.Dv TG_XATTR_NOSPACE ,
+.Dv TG_XATTR_TOOBIG ,
+or
+.Dv TG_XATTR_ERROR .
+.Fn tg_tagset_render
+returns
+.Dv NULL
+on allocation failure.
+.Sh EXAMPLES
+Link against the library with
+.Xr pkg-config 1 :
+.Bd -literal -offset indent
+cc example.c $(pkg-config --cflags --libs tg)
+.Ed
+.Sh SEE ALSO
+.Xr tg 1 ,
+.Xr tg 5
