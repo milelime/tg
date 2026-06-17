@@ -5,6 +5,7 @@
 /libtg.a
 /libtg.so*
 /tg.pc
-/tg-*.tar.gz
+/tg-*.tar.gz*
 *.o
 compile_commands.json
+MILESTONES.md
